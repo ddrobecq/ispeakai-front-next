@@ -37,6 +37,7 @@ function ChatPageContent() {
   const [canScrollUp, setCanScrollUp] = useState(false);
   const [canScrollDown, setCanScrollDown] = useState(false);
   const audioPlayerRef = useRef<HTMLAudioElement>(null);
+  const lastPlayedAudioUrlRef = useRef<string | null>(null);
 
   // Audio recording state
   const { startRecording, stopRecording, isRecording, recordingTime, error: recordingError, resetRecording } = useSpeechRecorder();
@@ -205,12 +206,25 @@ function ChatPageContent() {
   };
 
   const playAudio = (audioUrl: string) => {
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.src = audioUrl;
-      audioPlayerRef.current.play().catch((err) => {
+    if (!audioUrl || !audioPlayerRef.current) return;
+    
+    // Skip if we're already playing this same URL
+    if (lastPlayedAudioUrlRef.current === audioUrl) return;
+    
+    lastPlayedAudioUrlRef.current = audioUrl;
+    const audio = audioPlayerRef.current;
+    
+    // Stop current playback and load new source
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = audioUrl;
+    
+    // Play when data is ready
+    audio.play().catch((err) => {
+      if (err.name !== 'AbortError') {
         console.error('Error playing audio:', err);
-      });
-    }
+      }
+    });
   };
 
   if (!isMounted) {
