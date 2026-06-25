@@ -39,6 +39,7 @@ export function useChat(conversationId: string | null) {
       if (!conversationId) throw new Error('No conversation ID');
       return sendAudioMessage(conversationId, audioBlob);
     },
+    retry: false,
     onSuccess: (data) => {
       // Add assistant message with audio after receiving response
       addMessage({

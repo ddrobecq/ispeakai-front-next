@@ -42,8 +42,6 @@ function ChatPageContent() {
   const { startRecording, stopRecording, isRecording, recordingTime, error: recordingError, resetRecording } = useSpeechRecorder();
   const [isAudioSending, setIsAudioSending] = useState(false);
 
-  console.log('ChatPageContent rendered - messages:', messages.length);
-
   const createConversationMutation = useCreateConversation();
   const { sendMessage, sendAudioMessage, supportsAudio, isLoading, error } = useChat(conversationId);
 
@@ -187,8 +185,17 @@ function ChatPageContent() {
 
     try {
       setIsAudioSending(true);
+      console.log('[ChatPage] Sending audio message, conversationId:', conversationId);
+      console.log('[ChatPage] Audio blob type:', audioBlob.type, 'size:', audioBlob.size);
+      
+      // sendAudioMessage is already mutateAsync from the hook
       const response = await sendAudioMessage(audioBlob);
-      // Response is already added by the mutation
+      console.log('[ChatPage] Audio message response:', response);
+      
+      // Play audio if available (response already added via onSuccess)
+      if (response.audioUrl) {
+        playAudio(response.audioUrl);
+      }
     } catch (err) {
       console.error('Error sending audio:', err);
     } finally {
@@ -225,9 +232,8 @@ function ChatPageContent() {
             height: 56,
             boxShadow: 1,
             width: '100%',
-            margin: 0,
             padding: 0,
-            marginTop: '2px',
+            marginTop: 2,
           }}
         >
           <Toolbar sx={{ minHeight: 56, pl: 2, pr: 2, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
